@@ -5,7 +5,7 @@
 
 Name:           apel
 Version:        1.6.0
-%define releasenumber 1
+%define releasenumber 2_HTCondorCE
 Release:        %{releasenumber}%{?dist}
 Summary:        APEL packages
 
@@ -114,6 +114,7 @@ cp scripts/update_schema.sql %{buildroot}%_datadir/apel/
 # accounting scripts
 cp scripts/slurm_acc.sh %{buildroot}%_datadir/apel/
 cp scripts/htcondor_acc.sh %{buildroot}%_datadir/apel/
+cp scripts/htcondorce_acc.sh %{buildroot}%_datadir/apel/
 
 # message status script
 cp scripts/msg_status.py %{buildroot}%_datadir/apel/
@@ -134,20 +135,17 @@ exit 0
 
 %files lib
 %defattr(-,root,root,-)
-
 %{python_sitelib}/apel
 
 # ------------------------------------------------------------------------------
 
 %files parsers
 %defattr(-,root,root,-)
-
 %attr(755,root,root) %_bindir/apelparser
-
 %config(noreplace) %attr(600,-,-) %{apelconf}/parser.cfg
-
 %attr(755,root,root) %_datadir/apel/slurm_acc.sh
 %attr(755,root,root) %_datadir/apel/htcondor_acc.sh
+%attr(755,root,root) %_datadir/apel/htcondorce_acc.sh
 
 # ------------------------------------------------------------------------------
 
@@ -162,9 +160,11 @@ exit 0
 %attr(755,root,root) %_bindir/apelclient
 
 %config(noreplace) %attr(600,-,-) %{apelconf}/client.cfg
-%config(noreplace) %{_sysconfdir}/logrotate.d/apel-client
 
 # ------------------------------------------------------------------------------
+
+%config(noreplace) %{_sysconfdir}/logrotate.d/apel-client
+
 
 %files server
 %defattr(-,root,root,-)
@@ -174,7 +174,6 @@ exit 0
 %_datadir/apel/cloud.sql
 %_datadir/apel/storage.sql
 %_datadir/apel/update_schema.sql
-
 # Use wildcard to match .py, .pyc, and .pyo
 %attr(755,root,root) %_datadir/apel/msg_status.py*
 
