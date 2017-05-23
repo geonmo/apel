@@ -26,7 +26,7 @@ do
     -format "%s|" RoutedJobId \
     -format "%s|" Owner \
     -format "%s|" x509userproxysubject \
-    -format "%s|" x509UserProxyFQAN \
+    -format "%s|" x509UserProxyFirstFQAN \
     -format "%s|" x509UserProxyVOName \
     -format "%d|" RemoteWallClockTime \
     -format "%d|" RemoteUserCpu \

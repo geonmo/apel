@@ -23,7 +23,8 @@ from apel.common import valid_from, valid_until, parse_timestamp
 from apel.common.parsing_utils import parse_fqan
 from apel.parsers import Parser
 
-import re,datetime
+import re,datetime,logging
+log = logging.getLogger(__name__)
 
 class HTCondorCEParser(Parser):
     '''
@@ -37,30 +38,36 @@ class HTCondorCEParser(Parser):
         Parses single line from accounting log file.
 
         Example line of accounting log file:
-        "cms-t2-ce01.sdfarm.kr#2.0#1492418148|geonmo|/C=KR/O=KISTI/O=GRID/O=KISTI/CN=58079576 Geonmo Ryu|/C=KR/O=KISTI/O=GRID/O=KISTI/CN=58079576 Geonmo Ryu,/cms/Role=NULL/Capability=NULL,/cms/uscms/Role=NULL/Capability=NULL|1|0|0|1492418156|1492418167|0|100|1|"
-        Line was split, if you want to rejoin use ' ' as a joiner.
+        "cms-t2-ce01.sdfarm.kr#2.0#1492418148|3.0|geonmo|/C=KR/O=KISTI/O=GRID/O=KISTI/CN=58079576
+Geonmo Ryu|/cms/Role=NULL/Capability=NULL|cms|1|0|0|1492418156|1492418167|0|100|1|"
+        ['cms-t2-ce01.sdfarm.kr#2.0#1492418148', '3.0', 'geonmo',
+        '/C=KR/O=KISTI/O=GRID/O=KISTI/CN=58079576 Geonmo Ryu', '/cms/Role=NULL/Capability=NULL',
+        'cms', '1', '0', '0', '1492418156', '1492418167', '0', '100', '1', '']
+
         '''
         values = line.strip().split('|')
-        dates = datetime.datetime.fromtimestamp(values[9]).isoformat()
+        dateinfo = datetime.datetime.fromtimestamp(float(values[9]))
+        dates = dateinfo.isoformat(' ')
         mapping = {
-            'TimeStamp'      : lambda x: dates+'Z',
-            'GlobalUserName' : lambda x: x[2],
-            'FQAN'           : lambda x: x[4].split(',')[1],
-            'VO'             : lambda x: x[5],
-            'VOGroup'        : lambda x: x[5],
-            'VORole'         : lambda x: x[4].split(',')[1].split("/")[2].split('=')[-1]
+            'TimeStamp'      : lambda x: 'T'.join(dates.split())+'Z',
+            'VO'             : lambda x: parse_fqan( x[5])[2],
+            'VOGroup'        : lambda x: parse_fqan( x[5])[1],
+            'VORole'         : lambda x: parse_fqan( x[5])[0],
+            'FQAN'           : lambda x: x[3],
             'CE'             : lambda x: self.machine_name + ":" + "9619" + "/" + self.machine_name + "-" + "condor",
+            'GlobalUserName' : lambda x: x[3],
             'GlobalJobId'    : lambda x: x[0],
             'LrmsId'         : lambda x: x[1]+'.'+self.machine_name,
             'Site'           : lambda x: self.site_name,
-            'ValidFrom'      : lambda x: valid_from(dates),
-            'ValidUntil'     : lambda x: valid_until(dates),
+            'ValidFrom'      : lambda x: valid_from(dateinfo),
+            'ValidUntil'     : lambda x: valid_until(dateinfo),
             'Processed'      : lambda x: Parser.UNPROCESSED
         }
         rc = {}
 
         for key in mapping:
             rc[key] = mapping[key](values)
+            #print key, rc[key]
 
         record = HTCondorCERecord()
         record.set_all(rc)
