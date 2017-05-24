@@ -46,7 +46,7 @@ class HTCondorParser(Parser):
         mapping = {'Site'            : lambda x: self.site_name,
                    'MachineName'     : lambda x: self.machine_name,
                    'Infrastructure'  : lambda x: "APEL-CREAM-HTCONDOR",
-                   'JobName'         : lambda x: x[0],
+                   'JobName'         : lambda x: x[0]+"."+self.machine_name,
                    'LocalUserID'     : lambda x: x[1],
                    'LocalUserGroup'  : lambda x: "",
                    'WallDuration'    : lambda x: int(x[2]),

@@ -15,7 +15,7 @@
 
 A parser for HTCondorCE record file.
 
-    @author: Jordi Casals modified Blahd from Konrad Jopek
+    @author: Jordi Casals and Geonmo Ryu modified Blahd from Konrad Jopek
 '''
 
 from apel.db.records.htcondorce import HTCondorCERecord
@@ -24,6 +24,7 @@ from apel.common.parsing_utils import parse_fqan
 from apel.parsers import Parser
 
 import re,datetime,logging
+
 log = logging.getLogger(__name__)
 
 class HTCondorCEParser(Parser):
@@ -47,15 +48,15 @@ Geonmo Ryu|/cms/Role=NULL/Capability=NULL|cms|1|0|0|1492418156|1492418167|0|100|
         '''
         values = line.strip().split('|')
         dateinfo = datetime.datetime.fromtimestamp(float(values[9]))
-        dates = dateinfo.isoformat(' ')
+        dates = dateinfo.isoformat()+'Z'
         mapping = {
-            'TimeStamp'      : lambda x: 'T'.join(dates.split())+'Z',
-            'VO'             : lambda x: parse_fqan( x[5])[2],
-            'VOGroup'        : lambda x: parse_fqan( x[5])[1],
-            'VORole'         : lambda x: parse_fqan( x[5])[0],
-            'FQAN'           : lambda x: x[3],
-            'CE'             : lambda x: self.machine_name + ":" + "9619" + "/" + self.machine_name + "-" + "condor",
+            'TimeStamp'      : lambda x: dates,
             'GlobalUserName' : lambda x: x[3],
+            'FQAN'           : lambda x: x[4],
+            'VO'             : lambda x: parse_fqan( x[4])[2],
+            'VOGroup'        : lambda x: parse_fqan( x[4])[1],
+            'VORole'         : lambda x: parse_fqan( x[4])[0],
+            'CE'             : lambda x: self.machine_name + ":" + "9619" + "/" + self.machine_name + "-" + "condor",
             'GlobalJobId'    : lambda x: x[0],
             'LrmsId'         : lambda x: x[1]+'.'+self.machine_name,
             'Site'           : lambda x: self.site_name,
@@ -67,7 +68,6 @@ Geonmo Ryu|/cms/Role=NULL/Capability=NULL|cms|1|0|0|1492418156|1492418167|0|100|
 
         for key in mapping:
             rc[key] = mapping[key](values)
-            #print key, rc[key]
 
         record = HTCondorCERecord()
         record.set_all(rc)

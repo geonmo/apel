@@ -21,9 +21,9 @@ CONSTR="(JobStartDate>0)&&(CompletionDate>`date +%s -d "01 Jan 2014"`)"
 # Populate the temporary file
 for HF in $HISTORY_FILES
 do
-  $CONDOR_LOCATION/bin/condor_history -file $HF -constraint $CONSTR \
+  $CONDOR_LOCATION/bin/condor_ce_history -file $HF -constraint $CONSTR \
     -format "%s|" GlobalJobId \
-    -format "%s|" RoutedJobId \
+    -format "%s|" RoutedToJobId \
     -format "%s|" Owner \
     -format "%s|" x509userproxysubject \
     -format "%s|" x509UserProxyFirstFQAN \
@@ -40,7 +40,7 @@ do
 done
 
 # Invoke the parser
-/usr/bin/apelparser --config /etc/apel/parser.cfg
+#/usr/bin/apelparser --config /etc/apel/parser.cfg
 
 # Cleanup
 /bin/find $OUTPUT_LOCATION -name accounting.\* -mtime +30 -exec /bin/rm {} \;
